@@ -1,4 +1,5 @@
 # YouTube Detoxifier v3
+[![wakatime](https://wakatime.com/badge/user/1a6f184d-68f7-4ad4-8e76-b57d1a260208/project/b94ab5db-64ba-4990-be4f-d405dc15095e.svg)](https://wakatime.com/badge/user/1a6f184d-68f7-4ad4-8e76-b57d1a260208/project/b94ab5db-64ba-4990-be4f-d405dc15095e)
 
 YouTube Detoxifier v3 is an innovative web application designed to help users create a healthier and more productive YouTube experience. By filtering content and customizing your feed, you can focus on what matters most while avoiding distractions.
 
