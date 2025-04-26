@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube Detoxifier Dashboard</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        color: #333;
+        background-color: #f8f9fa;
+      }
+
+      header {
+        background-color: #c00;
+        color: white;
+        padding: 1rem 0;
+        text-align: center;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 1.5rem;
+      }
+
+      h1,
+      h2,
+      h3 {
+        margin: 0;
+      }
+
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      .card-title {
+        font-weight: 600;
+        color: #444;
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #c00;
+        text-align: center;
+        margin: 1rem 0;
+      }
+
+      .stat-label {
+        text-align: center;
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      canvas {
+        width: 100%;
+        height: 200px;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+
+      select,
+      input[type="range"] {
+        width: 100%;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+      }
+
+      button {
+        background-color: #c00;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      button:hover {
+        background-color: #a00;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+
+      th,
+      td {
+        padding: 0.75rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      th {
+        background-color: #f0f0f0;
+      }
+
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab {
+        padding: 0.75rem 1.5rem;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+      }
+
+      .tab.active {
+        border-bottom-color: #c00;
+        font-weight: 500;
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .footer {
+        margin-top: 2rem;
+        text-align: center;
+        color: #777;
+        font-size: 0.9rem;
+        padding-bottom: 2rem;
+      }
+
+      /* Special styling for charts */
+      .chart-container {
+        position: relative;
+        height: 250px;
+      }
+
+      .no-data-message {
+        color: #999;
+        text-align: center;
+        margin: 2rem 0;
+        font-style: italic;
+      }
+    </style>
+    <!-- Add Chart.js library for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <h1>YouTube Detoxifier Dashboard</h1>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="tabs">
+        <div class="tab active" data-tab="stats">Statistics</div>
+        <div class="tab" data-tab="settings">Quick Settings</div>
+        <div class="tab" data-tab="export">Import/Export</div>
+      </div>
+
+      <div class="tab-content active" id="stats-tab">
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Total Videos Filtered</h3>
+            </div>
+            <div class="stat-value" id="totalFiltered">0</div>
+            <div class="stat-label">since you started using Detoxifier</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Current Session</h3>
+            </div>
+            <div class="stat-value" id="sessionTime">0h 0m</div>
+            <div class="stat-label">time with Detoxifier active</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Filter Mode</h3>
+            </div>
+            <div class="form-group">
+              <select id="dashFilterMode" class="form-select">
+                <option value="blacklist">Blacklist Mode</option>
+                <option value="whitelist">Whitelist Mode</option>
+              </select>
+              <p id="filterModeDesc">
+                In Blacklist mode, videos matching your keywords/channels are
+                hidden.
+              </p>
+            </div>
+            <button id="applyFilterMode">Apply</button>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem">
+          <div class="card-header">
+            <h3 class="card-title">Daily Filtering Activity</h3>
+          </div>
+          <div class="chart-container">
+            <canvas id="dailyChart"></canvas>
+            <div id="noDataMessage" class="no-data-message">
+              No data available yet. Start browsing YouTube to collect
+              statistics.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content" id="settings-tab">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Filter Appearance</h3>
+          </div>
+
+          <div class="form-group">
+            <label for="dashFilterStyle">Filter Style:</label>
+            <select id="dashFilterStyle">
+              <option value="blur">Blur Videos</option>
+              <option value="dim">Dim Videos</option>
+              <option value="hide">Hide Videos</option>
+              <option value="border">Colored Border</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="blurSettings">
+            <label for="dashBlurAmount"
+              >Blur Intensity: <span id="blurValueDisplay">8px</span></label
+            >
+            <input
+              type="range"
+              id="dashBlurAmount"
+              min="1"
+              max="20"
+              value="8"
+            />
+          </div>
+
+          <div class="form-group" id="dimSettings">
+            <label for="dashDimAmount"
+              >Dim Intensity: <span id="dimValueDisplay">70%</span></label
+            >
+            <input
+              type="range"
+              id="dashDimAmount"
+              min="10"
+              max="90"
+              value="70"
+            />
+          </div>
+
+          <div class="form-group" id="borderSettings">
+            <label for="dashBorderColor">Border Color:</label>
+            <select id="dashBorderColor">
+              <option value="#ff0000">Red</option>
+              <option value="#ffa500">Orange</option>
+              <option value="#ffff00">Yellow</option>
+              <option value="#008000">Green</option>
+              <option value="#0000ff">Blue</option>
+              <option value="#800080">Purple</option>
+            </select>
+          </div>
+
+          <button id="applyFilterSettings">Apply Settings</button>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem">
+          <div class="card-header">
+            <h3 class="card-title">Category Filters</h3>
+          </div>
+
+          <div class="form-group">
+            <div>
+              <input type="checkbox" id="dashCatGaming" value="gaming" />
+              <label for="dashCatGaming" style="display: inline">Gaming</label>
+            </div>
+            <div>
+              <input type="checkbox" id="dashCatMusic" value="music" />
+              <label for="dashCatMusic" style="display: inline">Music</label>
+            </div>
+            <div>
+              <input type="checkbox" id="dashCatNews" value="news" />
+              <label for="dashCatNews" style="display: inline">News</label>
+            </div>
+            <div>
+              <input type="checkbox" id="dashCatSports" value="sports" />
+              <label for="dashCatSports" style="display: inline">Sports</label>
+            </div>
+          </div>
+
+          <button id="applyCategorySettings">Apply Categories</button>
+        </div>
+      </div>
+
+      <div class="tab-content" id="export-tab">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Export Settings</h3>
+          </div>
+          <p>Export your settings as JSON to save or share with others.</p>
+          <div class="form-group">
+            <textarea
+              id="exportJson"
+              rows="10"
+              style="width: 100%"
+              readonly
+            ></textarea>
+          </div>
+          <button id="copyExport">Copy to Clipboard</button>
+        </div>
+
+        <div class="card" style="margin-top: 1.5rem">
+          <div class="card-header">
+            <h3 class="card-title">Import Settings</h3>
+          </div>
+          <p>
+            Paste saved settings JSON here to restore or import from someone
+            else.
+          </p>
+          <div class="form-group">
+            <textarea
+              id="importJson"
+              rows="10"
+              style="width: 100%"
+              placeholder="Paste JSON settings here..."
+            ></textarea>
+          </div>
+          <button id="applyImport">Import Settings</button>
+          <div id="importMessage" style="color: #c00; margin-top: 0.5rem"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer container">
+      <p>
+        YouTube Detoxifier v1.2 | <a href="options.html">Advanced Settings</a>
+      </p>
+    </div>
+
+    <script src="dashboard.js"></script>
+  </body>
+</html>

@@ -1,17 +1,187 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <title>Detoxifier</title>
-  <style>
-    body { font-family: sans-serif; padding: 1rem; width: 200px; }
-    button { width: 100%; padding: .5rem; margin-top: .5rem; }
-  </style>
-</head>
-<body>
-  <button id="toggle">Toggle Detox</button>
-  <button id="options">Options</button>
-  <div id="message" style="color: red; margin-top: .5rem;"></div>
-  <script src="popup.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>YouTube Detoxifier</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        width: 280px;
+        padding: 0;
+        margin: 0;
+        color: #333;
+        background-color: #f8f9fa;
+      }
+
+      .header {
+        background-color: #c00;
+        color: white;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      h1 {
+        font-size: 16px;
+        margin: 0;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 28px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #c00;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(24px);
+      }
+
+      .label {
+        font-weight: 500;
+      }
+
+      select {
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        width: 120px;
+      }
+
+      .footer {
+        display: flex;
+        border-top: 1px solid #ddd;
+      }
+
+      .footer button {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 12px;
+        cursor: pointer;
+        font-weight: 500;
+        color: #555;
+      }
+
+      .footer button:hover {
+        background-color: #eee;
+      }
+
+      .stat {
+        background: white;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #555;
+      }
+
+      .stat-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #c00;
+      }
+
+      #message {
+        color: #c00;
+        font-size: 13px;
+        margin-top: 10px;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>YouTube Detoxifier</h1>
+      <label class="switch">
+        <input type="checkbox" id="toggleDetox" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="content">
+      <div class="stats-container">
+        <div class="row">
+          <div class="stat">
+            <div class="stat-title">Videos Filtered</div>
+            <div class="stat-value" id="filteredCount">0</div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Mode</div>
+            <div class="stat-value" id="currentMode">Blacklist</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="label">Filter Style:</span>
+        <select id="quickFilterStyle">
+          <option value="blur">Blur</option>
+          <option value="dim">Dim</option>
+          <option value="hide">Hide</option>
+          <option value="border">Border</option>
+        </select>
+      </div>
+
+      <div id="message"></div>
+    </div>
+
+    <div class="footer">
+      <button id="dashboard">Dashboard</button>
+      <button id="options">Settings</button>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
 </html>
