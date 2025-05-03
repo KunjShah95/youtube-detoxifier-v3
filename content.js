@@ -64,6 +64,7 @@ function applyDetox() {
     const categoryBadges = videoElement.querySelectorAll('.ytd-thumbnail-badge-renderer') || [];
     let categoryMatch = false;
     
+    // Only apply category filtering if the respective category is enabled in settings
     if (settings.categories.gaming && (title.includes('game') || title.includes('gaming') || 
         Array.from(categoryBadges).some(badge => badge.textContent.toLowerCase().includes('gaming')))) {
       categoryMatch = true;
@@ -86,20 +87,26 @@ function applyDetox() {
     
     // Keyword and channel matching
     const keywordMatch = settings.keywords.some(keyword => 
-      title.includes(keyword.toLowerCase()));
+      keyword && title.includes(keyword.toLowerCase()));
     
     const channelMatch = settings.channels.some(channelName => 
-      channel.includes(channelName.toLowerCase()));
+      channelName && channel.includes(channelName.toLowerCase()));
     
     // Determine if the video should be filtered based on whitelist/blacklist mode
     let shouldFilter;
     
     if (settings.filterMode) {
-      // Whitelist mode: filter if NOT matching
+      // Whitelist mode: filter if NOT matching keywords or channels
       shouldFilter = !(keywordMatch || channelMatch);
+      // Categories should NOT affect whitelist mode unless explicitly configured otherwise
     } else {
-      // Blacklist mode: filter if matching
-      shouldFilter = keywordMatch || channelMatch || categoryMatch;
+      // Blacklist mode: filter if matching keywords or channels
+      shouldFilter = keywordMatch || channelMatch;
+      // Only apply category filtering in blacklist mode when keywords/channels don't match
+      if (!shouldFilter && categoryMatch) {
+        const anyCategoryEnabled = Object.values(settings.categories).some(v => v);
+        shouldFilter = anyCategoryEnabled && categoryMatch;
+      }
     }
     
     // Apply filter and update stats
@@ -111,18 +118,16 @@ function applyDetox() {
   });
   
   // Update local stats
-  if (currentFilteredCount > 0) {
-    stats.filteredCount = currentFilteredCount;
-    
-    // Report to background script every 5 seconds at most
-    const now = Date.now();
-    if (now - stats.lastUpdate > 5000) {
-      chrome.runtime.sendMessage({
-        action: 'updateStats',
-        count: currentFilteredCount
-      });
-      stats.lastUpdate = now;
-    }
+  stats.filteredCount = currentFilteredCount;
+  
+  // Report to background script every 5 seconds at most
+  const now = Date.now();
+  if (now - stats.lastUpdate > 5000) {
+    chrome.runtime.sendMessage({
+      action: 'updateStats',
+      count: currentFilteredCount
+    });
+    stats.lastUpdate = now;
   }
 }
 
